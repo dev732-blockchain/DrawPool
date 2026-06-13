@@ -222,6 +222,13 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
         throw new Error(`Insufficient USDT balance. You need ${ethers.formatUnits(requiredAmount, 6)} USDT, but only have ${ethers.formatUnits(balance, 6)} USDT. ${isTestnet ? 'Please claim free Test USDT from the faucet at the top of the page.' : ''}`);
       }
 
+      // Check native POL (gas) balance to prevent "insufficient funds for gas" failures
+      const nativeBalance = await browserProvider.getBalance(signerAddress);
+      const minGas = ethers.parseEther('0.005'); // 0.005 POL minimum for gas
+      if (nativeBalance < minGas) {
+        throw new Error(`Insufficient POL (gas) balance. You only have ${parseFloat(ethers.formatEther(nativeBalance)).toFixed(4)} POL, but need at least 0.005 POL to pay for network transaction fees. ${isTestnet ? 'Please request free Test POL from the official Polygon Amoy Faucet.' : ''}`);
+      }
+
       const allowance = await usdtContract.allowance(signerAddress, contractAddress);
       
       const overrides = isTestnet ? {

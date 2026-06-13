@@ -19,7 +19,7 @@ export default function RootLayout({
         <TestnetBanner />
         
         {/* Navigation Header */}
-        <header className="border-b border-[#2c3a5f]/60 bg-[#16213E]/80 backdrop-blur-md sticky top-[38px] z-40">
+        <header className="border-b border-[#2c3a5f]/60 bg-[#16213E] sticky top-[38px] z-40">
           <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <Link href="/" className="flex items-center gap-2 group">
               <span className="text-2xl">💰</span>
