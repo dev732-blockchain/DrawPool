@@ -27,7 +27,7 @@ export default function RoundsHistory() {
   const [entriesTotal, setEntriesTotal] = useState(0);
 
   const isTestnet = process.env.NEXT_PUBLIC_IS_TESTNET === 'true';
-  const prizeUSD = isTestnet ? '5' : '1,000';
+  const prizeUSD = isTestnet ? '5' : '100';
   const explorerUrl = process.env.NEXT_PUBLIC_POLYGON_EXPLORER || 'https://polygonscan.com';
 
   const fetchHistory = async () => {

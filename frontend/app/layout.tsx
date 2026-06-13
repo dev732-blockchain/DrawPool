@@ -4,7 +4,7 @@ import TestnetBanner from '../components/TestnetBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'DrawPool — Send $1 USDT. Win $1,000.',
+  title: 'DrawPool — Send $1 USDT. Win $100.',
   description: 'Anonymous online prize draw platform on Polygon. Enter with $1 USDT directly from your Web3 wallet. 100% provably fair, automatic USDT payouts.',
 };
 

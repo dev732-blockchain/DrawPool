@@ -192,7 +192,7 @@ export default function Home() {
       {/* Hero section */}
       <div className="text-center space-y-4 max-w-xl mx-auto py-4">
         <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-          Send <span className="text-[#E6A817]">${ticketUSD} USDT</span>.<br className="sm:hidden" /> Win <span className="text-[#E6A817]">${isTestnet ? '5' : '1,000'}</span>.
+          Send <span className="text-[#E6A817]">${ticketUSD} USDT</span>.<br className="sm:hidden" /> Win <span className="text-[#E6A817]">${isTestnet ? '5' : '100'}</span>.
         </h1>
         <p className="text-[#8E9BB0] text-sm md:text-base leading-relaxed">
           The completely anonymous online prize draw. Simply send USDT directly from MetaMask to enter. No logins, no emails, no personal data.

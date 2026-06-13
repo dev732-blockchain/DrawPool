@@ -30,7 +30,7 @@ function MyEntriesContent() {
   const [addressInput, setAddressInput] = useState('');
 
   const isTestnet = process.env.NEXT_PUBLIC_IS_TESTNET === 'true';
-  const prizeUSD = isTestnet ? 5 : 1000;
+  const prizeUSD = isTestnet ? 5 : 100;
   const explorerUrl = process.env.NEXT_PUBLIC_POLYGON_EXPLORER || 'https://polygonscan.com';
 
   const fetchWalletHistory = async (walletAddr: string) => {
