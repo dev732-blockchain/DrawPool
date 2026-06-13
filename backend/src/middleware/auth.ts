@@ -10,6 +10,9 @@ import { config } from '../config';
  * - x-admin-timestamp: The millisecond timestamp matching the signed message
  */
 export async function verifyAdminAuth(request: FastifyRequest, reply: FastifyReply) {
+  if (request.method === 'OPTIONS') {
+    return;
+  }
   const address = request.headers['x-admin-address'] as string;
   const signature = request.headers['x-admin-signature'] as string;
   const timestampStr = request.headers['x-admin-timestamp'] as string;

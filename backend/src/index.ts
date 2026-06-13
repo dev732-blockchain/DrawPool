@@ -35,8 +35,12 @@ app.register(cors, {
       return;
     }
 
-    // Always allow the configured FRONTEND_URL
-    if (config.FRONTEND_URL === '*' || origin === config.FRONTEND_URL) {
+    // Normalize and strip trailing slashes for robust matching
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const cleanFrontendUrl = config.FRONTEND_URL.replace(/\/$/, '');
+
+    // Always allow the configured FRONTEND_URL or wildcard
+    if (cleanFrontendUrl === '*' || cleanOrigin === cleanFrontendUrl) {
       cb(null, true);
       return;
     }
@@ -70,6 +74,12 @@ app.register(cors, {
         cb(null, true);
         return;
       }
+
+      // Allow Vercel deployments automatically to prevent configuration mismatch errors
+      if (hostname.endsWith('.vercel.app')) {
+        cb(null, true);
+        return;
+      }
     } catch (err) {
       console.error('[CORS] Origin parsing error:', err);
     }
@@ -82,6 +92,7 @@ app.register(cors, {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-signature', 'x-admin-address', 'x-admin-timestamp'],
   credentials: true
 });
 
