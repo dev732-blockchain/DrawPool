@@ -1,0 +1,40 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Round {
+  id            Int       @id @default(autoincrement())
+  roundNumber   Int       @unique
+  status        String    @default("active") // "active" | "drawing" | "complete" | "payout_failed" | "stopped"
+  entriesSold   Int       @default(0)
+  winnerAddress String?
+  winnerEntry   Int?
+  prizeHash     String?   // tx hash of winner payout
+  revenueHash   String?   // tx hash of platform revenue payout
+  commitHash    String?   // SHA256 of seed (published before draw)
+  seed          String?   // revealed after draw (provably fair)
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  entries       Entry[]
+}
+
+model Entry {
+  id            Int      @id @default(autoincrement())
+  roundNumber   Int
+  walletAddress String
+  entryNumber   Int
+  txHash        String   @unique // the USDT payment tx hash
+  amountPaid    String   // exact amount in USDT (string to avoid float issues)
+  createdAt     DateTime @default(now())
+  round         Round    @relation(fields: [roundNumber], references: [roundNumber])
+}
+
+model ProcessedTx {
+  txHash      String   @id // prevents double-processing same payment
+  processedAt DateTime @default(now())
+}

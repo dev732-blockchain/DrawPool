@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files (contain private keys!)
+.env
+.env.local
+.env.production
+
+# Build artifacts
+dist/
+.next/
+out/
+
+# Contract build artifacts
+contract/artifacts/
+contract/cache/
+contract/typechain-types/
+
+# Misc
+.DS_Store
+*.log
+
+# AI Workspace Files & PDFs
+Gemini.md
+DrawPool_Knowledge_Base.md
+*.pdf
