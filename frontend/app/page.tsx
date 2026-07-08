@@ -331,6 +331,74 @@ export default function Home() {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
 
+  // Toggle this constant to deploy the full "Under Maintenance" page view
+  const UNDER_MAINTENANCE = true;
+
+  if (UNDER_MAINTENANCE) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 text-center space-y-8 relative">
+        <div className="bg-[#12122b]/85 border-2 border-red-500/40 rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-md relative overflow-hidden neon-pulse-red">
+          
+          {/* Tech accents */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-red-500/30" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-red-500/30" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-red-500/30" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500/30" />
+
+          {/* Alert Header Icon */}
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <span className="text-5xl animate-bounce">⚠️</span>
+            <div className="px-3 py-1 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest animate-pulse">
+              Protocol Offline
+            </div>
+          </div>
+
+          {/* Under Maintenance details */}
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-wider mt-6 uppercase leading-tight">
+            System Maintenance <br />
+            <span className="text-[#E6A817]">In Progress</span>
+          </h1>
+
+          <p className="text-sm text-[#8E9BB0] mt-4 leading-relaxed font-medium max-w-lg mx-auto">
+            DrawPool smart contracts are temporarily deactivated for optimization, gas tuning, and planned infrastructure updates. 
+          </p>
+
+          <div className="bg-[#0A0A16] border border-[#1f2042] p-5 rounded-2xl text-left space-y-3 max-w-md mx-auto my-8">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">🛡️</span>
+              <span className="text-xs font-extrabold text-white uppercase tracking-wider">Funds Security Protocols</span>
+            </div>
+            <p className="text-xs text-[#8E9BB0] leading-relaxed">
+              All active round ticket entries have been **automatically refunded** on-chain via the emergency batch refund system. Check your MetaMask transactions history or run the verifier below.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <a
+              href={`${isTestnet ? 'https://amoy.polygonscan.com' : 'https://polygonscan.com'}/address/0xe742fE499c493bF143fe22D51956335548B16884`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto bg-[#1f2042] hover:bg-[#2c3a5f] text-white font-bold text-xs py-3.5 px-6 rounded-xl border border-[#2c3a5f] transition-all duration-200 cursor-pointer"
+            >
+              Verify Contract on Polygonscan ↗
+            </a>
+            
+            <a
+              href="/verify"
+              className="w-full sm:w-auto bg-[#E6A817] hover:bg-[#ffd043] text-[#1A1A2E] font-black text-xs py-3.5 px-6 rounded-xl transition-all duration-200 cursor-pointer btn-press uppercase tracking-wider"
+            >
+              Run Cryptographic Verifier
+            </a>
+          </div>
+        </div>
+
+        <div className="text-[#8E9BB0] text-xs font-bold uppercase tracking-wider">
+          🛰️ DrawPool Operations will resume shortly. Thank you for your patience!
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 relative">
       {/* Platform Stopped Banner */}
