@@ -25,10 +25,7 @@ async function main() {
   const isPaused = await drawpool.paused();
   if (!isPaused) {
     console.log("\n1. Pausing the contract...");
-    const pauseTx = await drawpool.pause({
-      maxPriorityFeePerGas: ethers.parseUnits("40", "gwei"),
-      maxFeePerGas: ethers.parseUnits("50", "gwei")
-    });
+    const pauseTx = await drawpool.pause();
     console.log(`Pause transaction submitted: ${pauseTx.hash}`);
     await pauseTx.wait();
     console.log("✅ Smart contract is now PAUSED successfully!");
@@ -49,10 +46,7 @@ async function main() {
   }
 
   // Run emergencyRefund to send USDT back to entrants
-  const refundTx = await drawpool.emergencyRefund(entriesSold, {
-    maxPriorityFeePerGas: ethers.parseUnits("40", "gwei"),
-    maxFeePerGas: ethers.parseUnits("50", "gwei")
-  });
+  const refundTx = await drawpool.emergencyRefund(entriesSold);
   console.log(`Refund transaction submitted: ${refundTx.hash}`);
   await refundTx.wait();
   console.log(`✅ Successfully refunded all ticket buyers for Round #${roundId}!`);

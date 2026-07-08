@@ -20,10 +20,7 @@ async function main() {
   const isPaused = await drawpool.paused();
   if (isPaused) {
     console.log("\nUnpausing the contract to resume play...");
-    const unpauseTx = await drawpool.unpause({
-      maxPriorityFeePerGas: ethers.parseUnits("40", "gwei"),
-      maxFeePerGas: ethers.parseUnits("50", "gwei")
-    });
+    const unpauseTx = await drawpool.unpause();
     console.log(`Unpause transaction submitted: ${unpauseTx.hash}`);
     await unpauseTx.wait();
     console.log("✅ Smart contract is now UNPAUSED and active!");
