@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #1A1A2E;
+  --background: #0A0A16;
   --foreground: #E2E8F0;
-  --card: #16213E;
-  --card-hover: #1f305e;
+  --card: #12122b;
+  --card-hover: #1b1b3d;
   --accent: #E6A817;
   --accent-hover: #ffd043;
   --accent-muted: rgba(230, 168, 23, 0.15);
   --muted: #8E9BB0;
   --danger: #ef4444;
   --success: #22c55e;
-  --border: #2c3a5f;
+  --border: #1f2042;
 }
 
 body {
@@ -19,6 +19,110 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Retro Cyber Grid Background */
+.cyber-grid {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(31, 32, 66, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31, 32, 66, 0.25) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: grid-travel 20s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.cyber-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, transparent 20%, var(--background) 80%);
+  pointer-events: none;
+}
+
+@keyframes grid-travel {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 400px;
+  }
+}
+
+/* Flowing energy stripes for progress bar */
+.energy-flow-bg {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: energy-flow 1s linear infinite;
+}
+
+@keyframes energy-flow {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 1rem 0;
+  }
+}
+
+/* Pulsing neon glows */
+.shadow-neon-gold {
+  box-shadow: 0 0 15px rgba(230, 168, 23, 0.4), inset 0 0 8px rgba(230, 168, 23, 0.1);
+}
+.shadow-neon-blue {
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 8px rgba(6, 182, 212, 0.1);
+}
+.shadow-neon-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(239, 68, 68, 0.2);
+}
+.shadow-neon-green {
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.1);
+}
+
+/* Glow pulses */
+.neon-pulse-gold {
+  animation: pulse-gold-glow 2s infinite alternate;
+}
+.neon-pulse-red {
+  animation: pulse-red-glow 1s infinite alternate;
+}
+
+@keyframes pulse-gold-glow {
+  from {
+    box-shadow: 0 0 5px rgba(230, 168, 23, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(230, 168, 23, 0.6), 0 0 30px rgba(230, 168, 23, 0.3);
+  }
+}
+
+@keyframes pulse-red-glow {
+  from {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.4);
+    border-color: rgba(239, 68, 68, 0.9);
+  }
+}
+
+/* 3D Ticket press animation */
+.btn-press:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 /* Scrollbar styling */

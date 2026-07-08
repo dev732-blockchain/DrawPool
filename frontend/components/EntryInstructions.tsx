@@ -254,6 +254,20 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
       
       await enterTx.wait(1);
       console.log('[EntryInstructions] Enter Draw Tx confirmed');
+
+      // Set achievements local storage triggers for gamification badges
+      try {
+        if (signerAddress) {
+          if (quantity >= 10) {
+            localStorage.setItem(`badge_supercharger_${signerAddress.toLowerCase()}`, 'true');
+          }
+          if (entriesRemaining !== undefined && entriesRemaining >= 180) {
+            localStorage.setItem(`badge_earlybird_${signerAddress.toLowerCase()}`, 'true');
+          }
+        }
+      } catch (storageErr) {
+        console.warn('[EntryInstructions] Failed to set local badge data:', storageErr);
+      }
       
       setStep('success');
     } catch (err: any) {
@@ -263,20 +277,105 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
     }
   };
 
+  // Render a visual stack of ticket stubs based on quantity
+  const renderTicketStubs = () => {
+    const maxVisibleTickets = 6;
+    const ticketsToShow = Math.min(quantity, maxVisibleTickets);
+    const hasMore = quantity > maxVisibleTickets;
+
+    return (
+      <div className="py-4 flex flex-col items-center justify-center space-y-3">
+        <span className="text-[10px] text-[#8E9BB0] uppercase tracking-widest font-black block">TICKET DISPENSER</span>
+        <div className="relative h-28 w-full flex items-center justify-center px-4 overflow-hidden">
+          <div className="flex items-center justify-center -space-x-12 sm:-space-x-8 md:-space-x-10 transition-all duration-300">
+            {[...Array(ticketsToShow)].map((_, i) => {
+              // Add a slight rotate & translate skew to stack them dynamically
+              const rotation = (i - (ticketsToShow - 1) / 2) * (ticketsToShow > 3 ? 4 : 8);
+              const translateVal = Math.abs(i - (ticketsToShow - 1) / 2) * 5;
+              return (
+                <div
+                  key={i}
+                  className="relative w-40 h-24 rounded-xl border border-yellow-500/40 bg-gradient-to-br from-[#1b1b3d]/95 via-[#23234d] to-[#1b1b3d]/95 flex items-center justify-between p-3 overflow-hidden shadow-2xl hover:-translate-y-3 hover:scale-105 hover:border-yellow-400 transition-all duration-300 cursor-pointer shadow-neon-gold/20"
+                  style={{
+                    transform: `rotate(${rotation}deg) translateY(${translateVal}px)`,
+                    zIndex: i + 1,
+                  }}
+                >
+                  {/* Left Perforation Notch */}
+                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#12122b] border border-[#1f2042] z-10" />
+                  
+                  {/* Right Perforation Notch */}
+                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#12122b] border border-[#1f2042] z-10" />
+
+                  {/* Left Side: Ticket Core Details */}
+                  <div className="flex flex-col justify-between h-full text-left space-y-1 z-0">
+                    <span className="text-[9px] text-[#E6A817] font-black uppercase tracking-wider">DRAWPOOL TICKET</span>
+                    <div className="space-y-0.5">
+                      <span className="text-xs text-white/90 font-bold block leading-none">ROUND</span>
+                      <span className="text-lg font-black text-white leading-none font-mono">#{activeRoundNum()}</span>
+                    </div>
+                    <span className="text-[8px] text-[#8E9BB0] font-mono leading-none">NO. {i + 1} OF {quantity}</span>
+                  </div>
+
+                  {/* Perforation Line (Dashed divider) */}
+                  <div className="h-full border-r border-dashed border-[#1f2042]/80 mx-1 shrink-0" />
+
+                  {/* Right Side: Ticket stub barcode and price */}
+                  <div className="flex flex-col justify-between h-full items-end z-0 shrink-0">
+                    <span className="text-[9px] font-black text-[#E6A817] font-mono leading-none">$1</span>
+                    {/* Tiny Barcode Mock */}
+                    <div className="flex gap-[1px] h-6 items-end pb-1.5 opacity-60">
+                      <div className="w-[1px] h-full bg-[#8E9BB0]" />
+                      <div className="w-[2px] h-full bg-[#8E9BB0]" />
+                      <div className="w-[1px] h-full bg-[#8E9BB0]" />
+                      <div className="w-[3px] h-full bg-[#8E9BB0]" />
+                      <div className="w-[1px] h-full bg-[#8E9BB0]" />
+                      <div className="w-[2px] h-full bg-[#8E9BB0]" />
+                    </div>
+                    <span className="text-[8px] text-[#8E9BB0] font-black uppercase leading-none">POLY</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Remaining overflow text label */}
+        {hasMore && (
+          <span className="text-xs font-black text-[#E6A817] bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 rounded-full animate-pulse shadow-sm">
+            ➕ And {quantity - maxVisibleTickets} more ticket{(quantity - maxVisibleTickets) !== 1 ? 's' : ''} in your stack!
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const activeRoundNum = () => {
+    // Quick helper to read round number safely
+    return isLocked ? 'DRAWING' : 'ACTIVE';
+  };
+
   return (
-    <div className="bg-[#16213E] border border-[#2c3a5f] rounded-2xl p-6 md:p-8 shadow-xl max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold text-center text-[#E6A817] mb-6">Enter the Prize Draw</h2>
+    <div className="bg-[#12122b]/85 border border-[#1f2042] rounded-3xl p-6 md:p-8 shadow-2xl max-w-2xl mx-auto backdrop-blur-md relative overflow-hidden">
+      
+      {/* HUD decorative tech corners */}
+      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#1f2042]" />
+      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#1f2042]" />
+      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#1f2042]" />
+      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#1f2042]" />
+
+      <h2 className="text-2xl font-black text-center text-[#E6A817] uppercase tracking-wider mb-6">🎟️ Purchase Tickets Center</h2>
       
       <div className="space-y-6">
         {/* Step 1: Connect Wallet */}
-        <div className="flex flex-col md:flex-row gap-4 items-start border-b border-[#2c3a5f] pb-6">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-bold text-sm shrink-0">
+        <div className="flex flex-col md:flex-row gap-4 items-start border-b border-[#1f2042]/50 pb-6">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-black text-sm shrink-0 shadow-neon-gold/30">
             1
           </div>
           <div className="flex-1 space-y-2">
-            <h3 className="font-semibold text-lg">Connect Your Wallet</h3>
+            <h3 className="font-bold text-lg text-white uppercase tracking-tight">Connect Your Wallet</h3>
             <p className="text-sm text-[#8E9BB0]">
-              Connect your MetaMask wallet to switch to the correct network and sign the draw transaction.
+              Establish secure connection to switch networks and sign transactions.
             </p>
             <div className="pt-2">
               <WalletConnect onAddressChange={handleWalletConnect} />
@@ -285,29 +384,55 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
         </div>
 
         {/* Step 2: Buy Tickets */}
-        <div className="flex flex-col md:flex-row gap-4 items-start border-b border-[#2c3a5f] pb-6">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-bold text-sm shrink-0">
+        <div className="flex flex-col md:flex-row gap-4 items-start border-b border-[#1f2042]/50 pb-6">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-black text-sm shrink-0 shadow-neon-gold/30">
             2
           </div>
           <div className="flex-1 space-y-4">
-            <h3 className="font-semibold text-lg">Select Quantity & Buy</h3>
+            <h3 className="font-bold text-lg text-white uppercase tracking-tight">Select Quantity & Enter</h3>
             <p className="text-sm text-[#8E9BB0]">
-              Choose how many entries you wish to purchase ($1 USDT per ticket). You will be prompted to approve USDT first if needed, then confirm the entry draw transaction.
+              $1 USDT per entry. Dynamic allowances approved seamlessly on-chain.
             </p>
             
             {entriesRemaining !== undefined && (
-              <div className="text-sm font-semibold text-[#E6A817] flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg w-fit">
+              <div className="text-xs font-black text-red-400 flex items-center gap-1.5 bg-red-950/20 border border-red-900/35 px-3 py-2 rounded-lg w-fit animate-pulse">
                 <span>⚠️</span>
-                <span>Only {entriesRemaining.toLocaleString()} entries left in this round!</span>
+                <span>ONLY {entriesRemaining.toLocaleString()} SPOTS REMAINING IN THIS ROUND!</span>
               </div>
             )}
+
+            {/* Quick Bundle selectors */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {[
+                { label: '🎟️ Single', val: 1 },
+                { label: '🎭 Trio Stack', val: 3 },
+                { label: '🔥 Deca Pack', val: 10 },
+                { label: '👑 Super Stack', val: 20 },
+              ].map((bundle) => (
+                <button
+                  key={bundle.val}
+                  type="button"
+                  onClick={() => setQuantity(bundle.val)}
+                  className={`py-2 px-3 rounded-xl border text-xs font-black uppercase transition-all duration-200 cursor-pointer text-center ${
+                    quantity === bundle.val
+                      ? 'border-[#E6A817] bg-[#E6A817]/10 text-[#ffd043] shadow-neon-gold/20 scale-[1.03]'
+                      : 'border-[#1f2042] bg-[#0A0A16]/50 text-[#8E9BB0] hover:border-[#E6A817]/30 hover:text-white'
+                  }`}
+                >
+                  {bundle.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Ticket Graphic Shelf Render */}
+            {renderTicketStubs()}
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex items-center border border-[#2c3a5f] bg-[#1a1a2e] rounded-xl overflow-hidden">
+              <div className="flex items-center border border-[#1f2042] bg-[#0A0A16] rounded-xl overflow-hidden shadow-inner">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 hover:bg-[#2c3a5f] text-white transition-colors cursor-pointer"
+                  className="px-4 py-3 hover:bg-[#1f2042] text-[#8E9BB0] hover:text-white font-bold transition-all cursor-pointer select-none"
                 >
                   -
                 </button>
@@ -317,12 +442,12 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
                   max="100"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="w-16 text-center bg-transparent border-none text-white focus:outline-none font-bold"
+                  className="w-16 text-center bg-transparent border-none text-white focus:outline-none font-black font-mono text-base"
                 />
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(100, quantity + 1))}
-                  className="px-4 py-2 hover:bg-[#2c3a5f] text-white transition-colors cursor-pointer"
+                  className="px-4 py-3 hover:bg-[#1f2042] text-[#8E9BB0] hover:text-white font-bold transition-all cursor-pointer select-none"
                 >
                   +
                 </button>
@@ -331,53 +456,57 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
               <button
                 onClick={handleBuy}
                 disabled={!userAddress || isLocked || step !== 'idle' && step !== 'success' && step !== 'error'}
-                className="w-full sm:w-auto bg-[#E6A817] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ffd043] text-[#1A1A2E] font-bold px-8 py-3 rounded-xl transition-all cursor-pointer text-center flex-1"
+                className="w-full sm:w-auto bg-[#E6A817] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ffd043] text-[#1A1A2E] font-black px-8 py-3.5 rounded-xl transition-all duration-300 shadow-lg cursor-pointer text-center flex-1 btn-press uppercase tracking-wide shadow-neon-gold/20"
               >
-                {!userAddress ? 'Connect Wallet to Buy' : isLocked ? 'Round Locked (Drawing...)' : `Buy ${quantity} Ticket${quantity > 1 ? 's' : ''} ($${quantity} USDT)`}
+                {!userAddress 
+                  ? 'Connect Wallet to Play' 
+                  : isLocked 
+                    ? 'Round Locked (Drawing...)' 
+                    : `Enter Draw: $${quantity} USDT`}
               </button>
             </div>
 
             {/* Interactive Checkout States */}
             {step !== 'idle' && (
-              <div className="bg-[#1a1a2e] border border-[#2c3a5f] p-4 rounded-xl space-y-3">
+              <div className="bg-[#0A0A16] border border-[#1f2042] p-4 rounded-2xl space-y-3 shadow-inner">
                 {step === 'verifying_network' && (
-                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0]">
+                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0] font-semibold">
                     <span className="animate-spin text-[#E6A817]">⏳</span>
-                    <span>Verifying network settings in MetaMask...</span>
+                    <span>Synchronizing Polygon RPC configs...</span>
                   </div>
                 )}
                 {step === 'checking_allowance' && (
-                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0]">
+                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0] font-semibold">
                     <span className="animate-spin text-[#E6A817]">⏳</span>
-                    <span>Checking your USDT token allowance...</span>
+                    <span>Checking contract approval limits...</span>
                   </div>
                 )}
                 {step === 'approving' && (
-                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0]">
+                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0] font-semibold">
                     <span className="animate-spin text-[#E6A817]">⏳</span>
-                    <span>Please sign the USDT allowance approval in MetaMask...</span>
+                    <span>Sign the USDT allowance approval in MetaMask...</span>
                   </div>
                 )}
                 {step === 'entering' && (
-                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0]">
+                  <div className="flex items-center gap-3 text-sm text-[#E2E8F0] font-semibold">
                     <span className="animate-spin text-[#E6A817]">⏳</span>
                     <span>Entering draw on-chain... Please confirm in MetaMask.</span>
                   </div>
                 )}
                 {step === 'success' && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-3 text-sm text-green-400 font-bold">
+                    <div className="flex items-center gap-3 text-sm text-green-400 font-extrabold">
                       <span>✅</span>
-                      <span>Success! Your tickets have been purchased successfully!</span>
+                      <span>SUCCESS! Your tickets have been minted successfully!</span>
                     </div>
                     {txHash && (
                       <a
                         href={`${explorerUrl}/tx/${txHash}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs text-[#E6A817] hover:underline block ml-7"
+                        className="text-xs text-[#E6A817] hover:underline hover:text-[#ffd043] block ml-7 font-semibold"
                       >
-                        View transaction on Explorer ↗
+                        Verify on Explorer ↗
                       </a>
                     )}
                   </div>
@@ -386,13 +515,13 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 text-sm text-red-400 font-bold">
                       <span>❌</span>
-                      <span>Transaction Failed</span>
+                      <span>Transaction Aborted</span>
                     </div>
-                    <p className="text-xs text-[#8E9BB0] ml-7 break-words">{errorMsg}</p>
+                    <p className="text-xs text-[#8E9BB0] ml-7 break-words font-medium">{errorMsg}</p>
                     {errorMsg.toLowerCase().includes('network') && (
                       <button
                         onClick={handleAddPolygon}
-                        className="mt-2 bg-[#E6A817] hover:bg-[#ffd043] text-[#1A1A2E] font-semibold px-4 py-2 rounded-lg text-xs shadow-md transition-all duration-200 cursor-pointer block ml-7"
+                        className="mt-2 bg-[#E6A817] hover:bg-[#ffd043] text-[#1A1A2E] font-bold px-4 py-2 rounded-lg text-xs shadow-md transition-all duration-200 cursor-pointer block ml-7 btn-press"
                       >
                         Add Polygon
                       </button>
@@ -406,13 +535,13 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
 
         {/* Step 3: Track entries */}
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-bold text-sm shrink-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6A817] text-[#1A1A2E] font-black text-sm shrink-0 shadow-neon-gold/30">
             3
           </div>
           <div className="flex-1 space-y-3">
-            <h3 className="font-semibold text-lg">Track Your Entries</h3>
+            <h3 className="font-bold text-lg text-white uppercase tracking-tight">Track Your Wallet</h3>
             <p className="text-sm text-[#8E9BB0]">
-              Your entries will automatically appear within 30 seconds of transaction confirmation. Paste your wallet below to track:
+              Pastes automatically on connect. Verify your active round tickets.
             </p>
             <form onSubmit={handleTrackSubmit} className="flex gap-2">
               <input
@@ -420,12 +549,12 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
                 value={trackAddress}
                 onChange={(e) => setTrackAddress(e.target.value)}
                 placeholder="0x..."
-                className="flex-1 bg-[#1a1a2e] border border-[#2c3a5f] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E6A817] font-mono"
+                className="flex-1 bg-[#0A0A16] border border-[#1f2042] rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E6A817] font-mono shadow-inner"
               />
               <button
                 type="submit"
                 disabled={!trackAddress.startsWith('0x')}
-                className="bg-[#E6A817] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ffd043] text-[#1A1A2E] font-semibold px-4 py-2 rounded-lg text-sm transition-all cursor-pointer"
+                className="bg-[#E6A817] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ffd043] text-[#1A1A2E] font-bold px-5 py-2 rounded-xl text-sm transition-all cursor-pointer btn-press shadow-md"
               >
                 Track
               </button>
@@ -436,35 +565,35 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
 
       {/* Token Acquisition Guide Helper */}
       {!isTestnet && (
-        <div className="mt-6 bg-[#1a1a2e] border border-[#2c3a5f]/80 p-4 rounded-xl space-y-3">
-          <h4 className="text-[#E6A817] font-bold text-sm uppercase tracking-wide flex items-center gap-1.5">
-            🔑 Need POL (Gas) or USDT?
+        <div className="mt-6 bg-[#0A0A16]/60 border border-[#1f2042]/50 p-5 rounded-2xl space-y-3">
+          <h4 className="text-[#E6A817] font-extrabold text-xs uppercase tracking-widest flex items-center gap-1.5">
+            💎 Need POL (Gas) or USDT?
           </h4>
           <p className="text-xs text-[#8E9BB0] leading-relaxed">
-            To participate, you need <strong className="text-white">POL</strong> to cover network fees (gas) and <strong className="text-white">USDT</strong> for your entry tickets.
+            You require a tiny amount of <strong className="text-white">POL</strong> to cover network fees (gas) and <strong className="text-white">USDT</strong> for tickets.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <a
               href="https://www.p2p.lol/en"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 bg-[#2c3a5f] hover:bg-[#3d5180] text-center text-[#E2E8F0] font-bold text-xs px-3 py-2.5 rounded-lg border border-[#3d5180] transition-colors cursor-pointer"
+              className="flex-1 bg-[#1f2042]/60 hover:bg-[#2c3a5f] text-center text-[#E2E8F0] font-extrabold text-xs px-3 py-2.5 rounded-xl border border-[#1f2042] transition-colors cursor-pointer"
             >
-              1. Buy POL (Gas) on P2P.lol ↗
+              1. Buy POL with Cash via P2P.lol ↗
             </a>
             <a
               href="https://quickswap.exchange"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 bg-[#2c3a5f] hover:bg-[#3d5180] text-center text-[#E2E8F0] font-bold text-xs px-3 py-2.5 rounded-lg border border-[#3d5180] transition-colors cursor-pointer"
+              className="flex-1 bg-[#1f2042]/60 hover:bg-[#2c3a5f] text-center text-[#E2E8F0] font-extrabold text-xs px-3 py-2.5 rounded-xl border border-[#1f2042] transition-colors cursor-pointer"
             >
-              2. Swap to USDT on QuickSwap ↗
+              2. Swap POL to USDT on QuickSwap ↗
             </a>
           </div>
           <div className="text-center pt-1">
             <Link
               href="/how-it-works"
-              className="text-xs text-[#E6A817] hover:underline"
+              className="text-xs text-[#E6A817] hover:underline font-bold"
             >
               Read full Step-by-Step Wallet & Token Setup Guide →
             </Link>
@@ -473,19 +602,19 @@ export default function EntryInstructions({ entriesRemaining, isLocked, userAddr
       )}
 
       {/* Warnings */}
-      <div className="mt-8 bg-red-950/40 border border-red-900/50 p-4 rounded-xl space-y-2">
-        <h4 className="text-[#ef4444] font-bold text-sm uppercase tracking-wide flex items-center gap-1.5">
-          ⚠️ Critical Warnings
+      <div className="mt-8 bg-red-950/20 border border-red-900/30 p-5 rounded-2xl space-y-2.5">
+        <h4 className="text-[#ef4444] font-black text-xs uppercase tracking-widest flex items-center gap-1.5">
+          ⚠️ Security Protocols
         </h4>
-        <ul className="list-disc list-inside text-xs text-red-200/90 space-y-1">
+        <ul className="list-disc list-inside text-xs text-red-200/80 space-y-1.5 leading-relaxed font-medium">
           <li>
-            <span className="font-bold">{isTestnet ? 'POLYGON AMOY TESTNET' : 'POLYGON MAINNET'} ONLY</span>. MetaMask must be connected to the correct network.
+            <span className="font-bold">{isTestnet ? 'POLYGON AMOY TESTNET' : 'POLYGON MAINNET'} ONLY</span>. Always match network in MetaMask.
           </li>
           <li>
-            The smart contract is self-executing. Do not send USDT directly to the contract address; you must use the checkout flow above to call the contract functions.
+            Do not send USDT directly to the contract address; you must execute entries via this Web3 dApp control panel to trigger drawing updates.
           </li>
           <li>
-            Ensure your wallet is funded with a small amount of POL to pay for blockchain gas fees.
+            Always keep at least 0.005 POL in your wallet for smart contract gas execution.
           </li>
         </ul>
       </div>
